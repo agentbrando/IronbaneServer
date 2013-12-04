@@ -39,7 +39,7 @@ IronbaneApp
                     socket.on(eventName, function() {
                         var args = arguments;
                         callback.apply(socket, args);
-                        _.throttle(function() { $rootScope.apply(); }, 500)(); // update angular slower than socket
+                        _.throttle(function() { $rootScope.$apply(); }, 500)(); // update angular slower than socket
                     });
                 });
             },
