@@ -111,7 +111,6 @@ this.cells = {};
       return;
     } 
 
-console.log(textureHandler);
     var texture = textureHandler.getTexture( 'images/tiles/'+this.getZoneConfig('fluidTexture')+'.png', true);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
@@ -159,12 +158,11 @@ console.log(textureHandler);
         value: 0.0
       }
     };
-    var me = this;
     var shaderMaterial = new THREE.ShaderMaterial({
       uniforms : uniforms,
-      vertexShader : $('#vertex_'+me.getZoneConfig("fluidType")).text(),
-      fragmentShader : $('#fragment_'+me.getZoneConfig("fluidType")).text(),
-      transparent: me.getZoneConfig("fluidType") === "lava" ? false : true
+      vertexShader : $('#vertex_' + this.getZoneConfig("fluidType")).text(),
+      fragmentShader : $('#fragment_' + this.getZoneConfig("fluidType")).text(),
+      transparent: this.getZoneConfig("fluidType") === "lava" ? false : true
     //alphaTest: 0.5
     });
 
@@ -428,7 +426,7 @@ console.log(textureHandler);
     }
 
     if ( this.transitionState === transitionStateEnum.MIDDLE && this.status === terrainHandlerStatusEnum.LOADED &&
-      !IsLoadingCells() ) {
+      !this.IsLoadingCells() ) {
 
         this.transitionState = -1;
       var me = this;

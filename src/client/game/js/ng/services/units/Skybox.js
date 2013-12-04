@@ -19,10 +19,7 @@ var skyboxPath = 'images/skybox/';
 IronbaneApp.factory('Skybox', ['PhysicsObject', 'TextureHandler','MeshHandler', function(PhysicsObject, textureHandler, meshHandler){
 var Skybox = PhysicsObject.extend({
   Init: function(onReady) {
-    console.log("making skybox");
     var p = ironbane.terrainHandler.GetReferenceLocation();
-    console.log("ref loc: ");
-    console.log( p);
     this._super(p);
 
     this.onReady = onReady;
@@ -49,11 +46,11 @@ var Skybox = PhysicsObject.extend({
     material.side = THREE.BackSide;
 
     this.skyboxMesh = new THREE.Mesh(geometry, material);
+    console.log(this.skyboxMesh);
 
     this.terrainOctree = new THREE.Octree({undeferred: true});
 
     ironbane.scene.add(this.skyboxMesh);
-
     // Add a sun
     geometry = new THREE.PlaneGeometry(600, 600, 1, 1);
     this.sunMesh = new THREE.Mesh(geometry, textureHandler.getTexture('images/misc/sun.png', false, {
@@ -67,12 +64,13 @@ var Skybox = PhysicsObject.extend({
     }
 
     // Add an ambient light
+    console.log("adding ambient");
     this.ambientLight = new THREE.AmbientLight( 0x444444 );
     ironbane.scene.add( this.ambientLight );
-
+    console.log("adding sun");
     this.sunLight = new THREE.DirectionalLight( 0xcccccc );
     ironbane.scene.add( this.sunLight );
-
+    console.log("adding moon");
     this.moonLight = new THREE.DirectionalLight( 0xcccccc );
     ironbane.scene.add( this.moonLight );
     // Add terrain
@@ -81,12 +79,12 @@ var Skybox = PhysicsObject.extend({
       //this.texture = textureHandler.getTexture( texture, true);
 
       var jsonLoader = new THREE.JSONLoader();
-      (function(skybox){
+      var me = this;
+      console.log("loading skybox mesh");
         jsonLoader.load( model, function( geometry, jsonMaterials ) {
-          skybox.BuildMesh( geometry, jsonMaterials );
+          me.BuildMesh( geometry, jsonMaterials );
         }, null);
-      })(this);
-
+      
     //}
 
     this.isLoaded = false;
@@ -101,10 +99,11 @@ var Skybox = PhysicsObject.extend({
     });
 
     //THREE.GeometryUtils.triangulateQuads(geometry);
-
+    console.log("building terrain mesh");
     this.terrainMesh = new THREE.Mesh( result.geometry, new THREE.MeshFaceMaterial(result.materials) );
+    console.log("setting shadow");
     this.terrainMesh.receiveShadow = true;
-
+    console.log("adding terrain to scene");
     ironbane.scene.add(this.terrainMesh);
 
     this.terrainOctree.add( this.terrainMesh, {useFaces:true} );

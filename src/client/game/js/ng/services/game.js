@@ -1,12 +1,14 @@
 
 IronbaneApp
-    .factory('Game', ['$log', '$window', '$http', '$timeout', '$filter', 'TerrainHandler', 'HUDHandler', 'TextureHandler','MeshHandler', 'Snow', 'Player',
-    function($log, $window, $http, $timeout, $filter, terrainHandler, hudHandler, textureHandler, MeshHandler, Snow, Player) { // using $window to reveal the globals
+    .factory('Game', ['$log', '$window', '$http', '$timeout', '$filter', 'SocketHandler','TerrainHandler', 'HUDHandler', 'TextureHandler','MeshHandler', 'Snow', 'Player',
+    function($log, $window, $http, $timeout, $filter, socketHandler, terrainHandler, hudHandler, textureHandler, MeshHandler, Snow, Player) { // using $window to reveal the globals
         // make this private so that it can't be called directly
 
 
         var Game = function() {
             // cheap hack to get mouthwash on the chat bubble
+            socketHandler.initConnection();
+       
             this.mouthwash = $filter('mouthwash');
 
             // hacked in until injection day
@@ -16,6 +18,7 @@ IronbaneApp
             this.terrainHandler = terrainHandler;
 
             $window.terrainHandler = terrainHandler;
+            $window.socketHandler = socketHandler;
 
             $window.textureHandler = textureHandler;
 
@@ -230,7 +233,7 @@ IronbaneApp
                 if (terrainHandler.status === $window.terrainHandlerStatusEnum.LOADED &&
                     !terrainHandler.IsLoadingCells()) {
                     if (!game.player) {
-                        game.player = new Player(socketHandler.spawnLocation, new $window.THREE.Euler(0, $window.socketHandler.spawnRotation, 0), $window.socketHandler.playerData.id, $window.socketHandler.playerData.name);
+                        game.player = new Player(socketHandler.spawnLocation, new $window.THREE.Euler(0, socketHandler.spawnRotation, 0), $window.socketHandler.playerData.id, $window.socketHandler.playerData.name);
                     }
                 }
             }

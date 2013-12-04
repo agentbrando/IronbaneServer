@@ -15,24 +15,23 @@
     along with Ironbane MMO.  If not, see <http://www.gnu.org/licenses/>.
 */
 IronbaneApp
-    .factory('SocketHandler', ['$log', 'socket', '$window', function($log, socket, $window) {
+    .service('SocketHandler', ['$log', 'socket', '$window', '$injector', function($log, socket, $window, $injector) {
+
+        
+        //this.socket = socket;
+        this.serverOnline = typeof io === 'undefined' ? false : true;
+        this.loggedIn = false;
+        this.spawnLocation = null;
+        this.spawnRotation = 0;
+        this.playerData = null;
+        this.readyToReceiveUnits = false;
+        this.inGame = false;
+
+        this.socket = socket;
         
 
-        // here is where we actually send the class
-        function SocketHandler(){
-            //this.socket = socket;
-            this.serverOnline = typeof io === 'undefined' ? false : true;
-            this.loggedIn = false;
-            this.spawnLocation = null;
-            this.spawnRotation = 0;
-            this.playerData = null;
-            this.readyToReceiveUnits = false;
-            this.inGame = false;
-            this.initConnection();
-        }
-
-        SocketHandler.prototype.initConnection = function(){
-        if (this.serverOnline) {
+        this.initConnection = function(){
+            if (this.serverOnline) {
             socket.connect();
             
             socket.emit('getStartData', {}, function(reply) {
@@ -88,7 +87,7 @@ IronbaneApp
         }
 
     };
-    SocketHandler.prototype.connect = function(abortConnect) {
+    this.connect = function(abortConnect) {
         if (!this.serverOnline) return;
 
         if (_.isUndefined(startdata.characterUsed)) return;
@@ -149,7 +148,7 @@ IronbaneApp
             }
         });
     };
-    SocketHandler.prototype.Setup = function() {
+    this.Setup = function() {
         console.log("setting up socket");
         socket.on('addUnit', function(data) {
             var unit = null;
@@ -167,57 +166,71 @@ IronbaneApp
 
             switch (template.type) {
                 case UnitTypeEnum.MOVINGOBSTACLE:
+                    var MovingObstacle = $injector.get('MovingObstacle');
                     unit = new MovingObstacle(ConvertVector3(data.position), new THREE.Euler(data.rotX, data.rotY, data.rotZ), data.id, data.param, data.metadata);
                     break;
                 case UnitTypeEnum.TRAIN:
+                    var Train = $injector.get('Train');
                     unit = new Train(ConvertVector3(data.position), new THREE.Euler(data.rotX, data.rotY, data.rotZ), data.id, data.param, data.metadata);
                     break;
                 case UnitTypeEnum.TOGGLEABLEOBSTACLE:
+                    var ToggleableObstacle = injector.get('ToggleableObstacle');
                     unit = new ToggleableObstacle(ConvertVector3(data.position), new THREE.Euler(data.rotX, data.rotY, data.rotZ), data.id, data.param, data.metadata);
                     break;
                 case UnitTypeEnum.LEVER:
+                    var Lever = $injector.get('Lever');
                     unit = new Lever(ConvertVector3(data.position), data.id, data.metadata);
                     break;
                 case UnitTypeEnum.TELEPORTENTRANCE:
+                    var TeleportEntrance = $injector.get('TeleportEntrance');
                     unit = new TeleportEntrance(ConvertVector3(data.position), data.id, data.metadata);
                     break;
                 case UnitTypeEnum.TELEPORTEXIT:
+                    var TeleportExit = $injector.get('TeleportExit');
                     unit = new TeleportExit(ConvertVector3(data.position), data.id, data.metadata);
                     break;
                 case UnitTypeEnum.MUSICPLAYER:
+                    var MusicPlayer = $injector.get('MusicPlayer');
                     unit = new MusicPlayer(ConvertVector3(data.position), data.id, data.metadata);
                     break;
                 case UnitTypeEnum.HEARTPIECE:
+                    var HeartPiece = $injector.get('HeartPiece');
                     unit = new HeartPiece(ConvertVector3(data.position), data.id);
                     break;
                 case UnitTypeEnum.SIGN:
+                    var Sign = $injector.get('Sign');
                     unit = new Sign(ConvertVector3(data.position), new THREE.Euler(0, data.rotY, 0), data.id, data.param, data.metadata);
                     break;
                 case UnitTypeEnum.WAYPOINT:
                     // Don't show on production
                     if ( isProduction ) return;
-
+                    var Waypoint = $injector.get('Waypoint');
                     unit = new Waypoint(ConvertVector3(data.position), data.id);
                     break;
 
                 case UnitTypeEnum.TRIGGER:
+                    var Trigger = $injector.get('Trigger');
                     unit = new Trigger(ConvertVector3(data.position), data.id);
                     break;
 
                 case UnitTypeEnum.BANK:
                     //console.log('got bank!', data);
+                    var Mesh = $injector.get('Mesh');
                     unit = new Mesh(ConvertVector3(data.position), new THREE.Euler(0, data.rotY, 0), data.id, data.metadata.mesh, data.metadata);
                     break;
 
                 case UnitTypeEnum.LOOTABLE:
                     if ( data.param < 10 ) {
+                        var LootBag = $injector.get('LootBag');
                       unit = new LootBag(ConvertVector3(data.position), data.id, data.param);
                     } else {
+                        var LootableMesh = $injector.get('LootableMesh');
                       unit = new LootableMesh(ConvertVector3(data.position), new THREE.Euler(0, data.rotY, 0), data.id, data.param, data.metadata);
                     }
                     break;
                 default:
                     // return;
+                    var Fighter = $injector.get('Fighter');
                     unit = new Fighter(ConvertVector3(data.position), new THREE.Euler(0, data.rotY, 0), data.id, unitname, data.param, data['size'], data['health'], data['armor'], data['healthMax'], data['armorMax']);
                     break;
             }
@@ -225,6 +238,7 @@ IronbaneApp
             if ( data.id < 0 ) {
                 unit.template = template;
             }
+            var Fighter = $injector.get('Fighter');
             if (unit instanceof Fighter) {
                 // Update clothing
                 unit.appearance.hair = data['hair'];
@@ -705,6 +719,7 @@ IronbaneApp
                         }
 
                         // Only for fighters, otherwise zeppelins etc start to bug
+                        var Fighter = $injector.get('Fighter');
                         if ( unit instanceof Fighter ) {
                             if (Math.abs(unit.object3D.position.y - unitdata.p.y) > 1) unit.object3D.position.y = unitdata.p.y;
                         }
@@ -717,7 +732,7 @@ IronbaneApp
 };
 
         
-            SocketHandler.prototype.joinGame = function() {
+            this.joinGame = function() {
                 var self = this,
                     data = {
                         id: startdata.user,
@@ -755,7 +770,4 @@ IronbaneApp
                     hudHandler.MakeSlotItems(false);
                 });
             };
-            var socketHandler = new SocketHandler();
-            $window.socketHandler = socketHandler;
-        return socketHandler;
     }]);

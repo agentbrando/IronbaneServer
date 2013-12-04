@@ -262,7 +262,7 @@ var Unit = PhysicsObject.extend({
     if ( this.mesh ) {
 
       var me = this;
-
+      var Mesh = $injector.get('Mesh');
       if ( this instanceof Mesh) {
         this.mesh.traverse( function ( object ) {
           me.octree.remove( object );
@@ -315,7 +315,8 @@ var Unit = PhysicsObject.extend({
 
 
     //move this to Player.js
-    if ( this instanceof Player &&
+    var Player = $injector.get('Player');
+    if ( this instanceof Player && ironbane.player && 
       (!ironbane.player.canMove ||
         terrainHandler.transitionState !== transitionStateEnum.END) ) return;
 
@@ -337,7 +338,7 @@ var Unit = PhysicsObject.extend({
 
 
     
-
+    var Mesh = $injector.get('Mesh');
     if ( this.dynamic
       && socketHandler.readyToReceiveUnits
       && !(this instanceof Mesh)) {
